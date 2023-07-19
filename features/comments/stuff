@@ -1,0 +1,11 @@
+
+export const {addComment} = commentsSlice.actions;
+
+addComment: (state, action) => {
+    if (state.commentsArray.includes(action.payload)) {
+        return commentsArray.filter((comment) => comment === action.payload);
+    }
+    else {
+        comment.push(action.payload);
+    }
+}
