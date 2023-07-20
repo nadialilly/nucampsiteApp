@@ -1,4 +1,5 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { useRef } from 'react';
+import { Text, View, StyleSheet, PanResponder, Alert } from 'react-native';
 import {Card, Icon} from 'react-native-elements';
 import { baseUrl } from '../../shared/baseUrl';
 import * as Animatable from 'react-native-animatable';
@@ -6,12 +7,52 @@ import * as Animatable from 'react-native-animatable';
 const RenderCampsite = (props) => {
     const {campsite} = props;
 
+    const view = useRef();
+
+    const isLeftSwipe = ({ dx}) => dx < -200;
+
+    const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPandResponderGrant: () => {
+            view.current
+                .rubberBand(1000)
+                .then((endState) => console.log(endState.finish ? 'finished' : 'canceled'));
+        },
+        onPanResponderEnd: (e, gestureState) => {
+            console.log('pan responder end', gestureState);
+    
+            if (isLeftSwipe(gestureState)) {
+                Alert.alert(
+                    'Add Favorite',
+                    'Are you sure you wishh to add ' + campsite.name + 'to favorites?', 
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel',
+                            onPress: () => console.log('Cancel Pressed')
+                        },
+                        {
+                            text: 'OK',
+                            onPress: () => props.isFavorite
+                            ? console.log('Already set as a favorite')
+                            : props.markFavorite()
+                        }
+                    ], 
+                    {cancelable: false}
+                );
+
+             }
+        }
+      });
+
     if (campsite) {
         return (
             <Animatable.View
                     animation= 'fadeInDownBig'
                     duration={2000}
                     delay={1000}
+                    ref={view}
+                    {...panResponder.panHandlers}
                 >
                 <Card containerStyle={styles.cardContainer} >
                     <Card.Image source={{ uri: baseUrl + campsite.image}} >
